@@ -1,0 +1,143 @@
+#! /bin/bash
+
+
+usage()
+{
+  echo "$0 INTERFACE"
+  exit 1
+}
+
+if [[ $# -eq 0 ]]; then
+  usage
+fi
+
+eid=$$
+
+# GIFACE_IF_PATH
+# GIFACE_TMP_DIR
+if [[ -z "$GIFACE_TMP_DIR" ]]; then
+  GIFACE_TMP_DIR="/tmp/giface"
+fi
+if [[ -z "$GIFACE_IF_PATH" ]]; then
+  GIFACE_IF_PATH="."
+fi
+
+if [[ ! -d "$GIFACE_TMP_DIR" ]]; then
+  if [[ ! -e "$GIFACE_TMP_DIR" ]]; then
+    mkdir -p "$GIFACE_TMP_DIR"
+    if [[ $? -ne 0 ]]; then
+      echo "Failed creating \"$GIFACE_TMP_DIR\"" >&2
+      exit 1
+    fi
+  else
+    echo "\"$GIFACE_TMP_DIR\" exists and is not a dir" >&2
+    exit 1
+  fi
+fi
+touch "$GIFACE_TMP_DIR/giface_test" >/dev/null 2>/dev/null
+if [[ $? -ne 0 ]]; then
+  echo "I cannot write inside \"$GIFACE_TMP_DIR\"" >&2
+fi
+
+gifaceexe=`which giface`
+if [[ $? -ne 0 ]]; then
+  echo "Cannot locate giface" >&2
+  exit 1
+fi
+
+fileexe=`which file`
+if [[ $? -ne 0 ]]; then
+  echo "Cannot locate magic file" >&2
+  exit 1
+fi
+
+tarexe=`which tar`
+if [[ $? -ne 0 ]]; then
+  havetar=0
+else
+  havetar=1
+fi
+
+gzipexe=`which gzip`
+if [[ $? -ne 0 ]]; then
+  havegzip=0
+else
+  havegzip=1
+fi
+
+# find file
+ifile=""
+isapath=`echo "$1" |egrep -c "^\./|^\.\./|/"`
+if [[ $isapath -eq 0 ]]; then
+    ifile=`find "$GIFACE_IF_PATH" -maxdepth 1 |grep -E "$1(\.glade|\.giface|)\$"`
+    if [[ $? -ne 0 ]]; then
+      echo "Cannot find interface for $1" >&2
+      exit 1
+    fi
+    # can be:
+    # lame lame.glade lame.giface
+    if [[ `echo "$ifile"|wc -l` -gt 1 ]]; then
+      echo "Name conflicts for $1:" >&2
+      echo "$ifile" >&2
+      exit 1
+    fi
+    idfile="$ifile"
+else
+   ifile="$1"
+   idfile="`basename "$ifile"`"
+   if [[ ! -f "$ifile" ]]; then
+     echo "Error, \"$ifile\" does not exist (or is not a file)" >&2
+     exit 1
+   fi
+fi
+
+    text=`$fileexe "$ifile"`
+    isxml=`echo "$text" |egrep -c XML`
+    if [[ $isxml -gt 0 ]]; then
+       #simple XML
+       $gifaceexe "$ifile"
+       exit $?
+    fi
+    isgz=`echo "$text"|egrep -c "gzip compressed"`
+    if [[ $isgz -ne 0 ]]; then
+        # it seems a single file compressed with gzip
+        if [[ $havegzip -eq 1 ]]; then
+          $gzipexe -d -S "" -c "$ifile" >"$GIFACE_TMP_DIR/$idfile.$eid"
+          istar=`$fileexe "$GIFACE_TMP_DIR/$idfile.$eid" |egrep -c "tar archive"`
+          if [[ $istar -ne 0 ]]; then
+            # it was a tar
+            mkdir "$GIFACE_TMP_DIR/$idfile${eid}_dir"
+            $tarexe -xf "$GIFACE_TMP_DIR/$idfile.$eid" -C "$GIFACE_TMP_DIR/$idfile${eid}_dir"
+            xmlglade=`find "$GIFACE_TMP_DIR/$idfile${eid}_dir" -type f -name "interface.glade"`
+            ifdesc=`find "$GIFACE_TMP_DIR/$idfile${eid}_dir" -type f -name "interface.desc"`
+            err=0
+            if [[ "$xmlglade" == "" ]]; then
+              echo "No interface..." >&2
+              err=1
+            else
+              $gifaceexe "$xmlglade" "$ifdesc"
+              err=$?
+            fi
+            rm "$GIFACE_TMP_DIR/$idfile${eid}_dir" >/dev/null 2>/dev/null
+            rm "$GIFACE_TMP_DIR/$idfile.$eid" >/dev/null 2>/dev/null
+            exit $err
+          else
+            #try to feed it to giface
+            $gifaceexe "$GIFACE_TMP_DIR/$idfile.$eid"
+            err=$?
+            rm "$GIFACE_TMP_DIR/$idfile.$eid" >/dev/null 2>/dev/null
+            exit $err
+          fi
+        else
+          echo "Cannot un-gzip the file: where's gzip?!" >&2
+          exit 1
+        fi
+    else
+      echo "Magic file said:" >&2
+      echo "$text" >&2
+      echo "And I don't know how to handle this!" >&2
+      exit 1
+    fi
+
+
+exit 0

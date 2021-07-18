@@ -1,0 +1,646 @@
+<html>
+  <head>
+    <title>GIface</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <style>
+body { text-align: justify;
+       margin-left: 10%;
+       margin-right: 10%;
+     }
+h1 { border: 1px solid #FF5555; padding: 1px 5px; background-color: #FFDEDE;}
+pre { border: 1px solid #5555FF; padding: 1px 5px; background-color: #DEDEFF;
+      font-size: small;
+    }
+blockquote { margin-left: 5%; margin-right: 5%; border: 1px solid #DEDEDE;
+             background-color: #EAEAEA; font-size: small;
+           }
+q { quotes: "\201C" "\201D" "`" "'" }
+cite { font-style: italic; color: #005500; }
+span[alert] { color:red; }
+dl.desc dt { font-weight: bold;border-bottom:2px solid green;margin-top:1pc;}
+dl.desc dd { border:1px solid green;border-top:0px;padding:4px 10px;}
+dl.el dt {border:1px solid red;background-color:#FFFFAA; padding:1px 4px;
+          font-weight:bold; margin-top:1pc;}
+dl.el dd {background-color:#FFEEEE;padding:1px 4px;}
+h4 { color:blue;text-align:center;}
+h5 { border-bottom:1px solid yellow; font-variant: small-caps; font-weight:normal;font-size:medium;
+     background-color:#FFFFCD;
+     text-align:center;}
+    </style>
+  </head>
+  <body>
+<h1>GIface</h1>
+
+<h2>Introduction</h2>
+
+<p>
+GIface is a tool that aims to be able to provide an interface for (almost)
+every command line you wish to use through a GUI rather than through the command
+line.
+</p>
+
+<p>
+This purpose is accomplished by using the <i>libglade</i> that is altogether
+with GTK libs a requirement.
+</p>
+
+<p>
+From the final user's point of view it is rather easy: someone provides
+the interface's description, that is needed by GIface, for a specific
+program, while the final user have just to put that description somewhere
+and call it through GIface program, that she/he installed somewhere on
+its system.
+</p>
+
+<p>
+So the final users must only digit in a command line something like
+<tt>giface /path/to/interfacename.giface</tt>, or rather put this command in a
+graphical menu of his/her preferred desktop. (We shall see tips for more
+later)
+</p>
+
+<p>
+Interface writers likely would like to use a graphical GUI Designer like
+Glade in order to create the interface file, but being a <q>simple</q>
+XML file, they could make it by hands if they are not scared about. In
+anycase it is the <i>interface developer</i> who have to know all the
+details about GIface.
+</p>
+
+<p>
+At the third level stay the programmers who want to make this tool better.
+However I hope this is useful in someway.
+</p>
+
+
+
+<h2>Table of contents</h2>
+
+<ul>
+  <li><a href="#final">GIface for final users</a>
+  <ul>
+    <li><a href="#installing">Installing</a>
+    <li><a href="#compiling">Compiling</a>
+    <li><a href="#calling">Using</a>
+    <li><a href="#lastthing">Last tricky thing</a>
+  </ul>
+  <li><a href="#if">GIface for interface writers</a>
+  <ul>
+    <li><a href="#gipreface">Preface</a>
+    <li><a href="#desc">How to describe interfaces</a>
+    <li><a href="#level1">Level-1 interfaces</a>
+    <li><a href="#gifaceh">GIface handler you can/must use</a>
+    <li><a href="#gifaceo">Glade widget you can/must provide</a>
+    <li><a href="#level2">Level-2 interfaces</a>
+    <li><a href="#problems">Known problems</a>
+  </ul>
+  <li><a href="#progr">GIface for programmers</a>
+</ul>
+
+<hr>
+
+
+<h2><a name="final">GIface for final users</a></h2>
+
+<h3><a name="installing">Installing GIface</a></h3>
+
+<p>
+This tools is born on GNU/Linux and should work on a lot of UNIX flavours,
+but I did not any effort for portability. Theoretically it could work
+on Windows too, since GTK lib exist also there. Anyway the following
+instructions are mainly for GNU/Linux and UNIX systems.
+</p>
+
+<p>
+Let us suppose <b>you already have the executable</b>. All you as administrator
+of your system must do is to put it where the system can find it. Common
+directories are <tt>/usr/bin</tt> or better <tt>/usr/local/bin</tt>.
+If you have not administrator privileges, you can put it inside your
+home's bin, something like <tt>/home/username/bin</tt>. You should
+be able to locate it through the <tt>$HOME</tt> environmental variable.
+</p>
+
+<p>
+Then you can use it simply writing in a shell something like:
+</p>
+
+<pre>
+$ giface a_program_interface.giface
+</pre>
+
+<p>or</p>
+
+<pre>
+$ giface a_program_interface.giface a_program_interface.desc
+</pre>
+
+<p>
+(The syntax will be explained later.)
+</p>
+
+<p>
+It's likely you will prefer to call GIface using the provided Bash script
+(inside the directory <tt>script</tt>).
+Just put it too inside an executables path (see the env. var. <tt>$PATH</tt>
+to know where your system locates the executables).
+</p>
+
+<p>
+There are not preferred places for the interface files. You put them
+somewhere, and the pass their full path to GIface, and GIface will do the
+rest. In anycase an administrator could like to put them all inside a
+directory, e.g. <tt>/usr/local/share/giface</tt>. Then the script can be
+customized so that you can specify just the name of the program as its
+argument and everything will go fine. You need to set the
+<tt>GIFACE_IF_PATH</tt> env. variable. You will still be able to call
+a interface not in that path specifying an absolute or explicitly
+relative path as argument to
+the script, or just calling GIface directly (since some <i>smoothing</i>
+is done by the script).
+</p>
+
+<p>
+Hopefully some good guy will have created a package, like .deb or .rpm,
+so that installing GIface will be as easy as double-clicking on that
+file from your preferred file manager.
+</p>
+
+<p>
+After that, you just must wait for interfaces to come.
+</p>
+
+
+
+<h3><a name="compiling">Compiling GIface</a></h3>
+
+<p>
+You can try even though you are not a programmer. On GNU/Linux it's very
+likely you have the GCC compiler installed. When you have installed your
+GNU/Linux system through a graphical installer, hope you have put all the
+<tt>devel</tt> packages. You need just few of them, but I won't list
+those here. Just go and install those strange devel packages right now, your
+probability of success will greatly increase!
+</p>
+
+<p>
+If you compiled by yourself the Linux kernel and almost all the tools on
+your GNU/Linux box, or if you usually do not use a graphical installer
+tool (or tool like apt-get) skip this part, you know already what you have
+to do.
+</p>
+
+<p>
+Now, put the <tt>.tar.gz</tt> file you have downloaded somewhere, and
+<q>open</q> a shell (living on a GNU/Linux or UNIX box means knowing what a shell
+is and how to run it). Say you have put the tar.gz into <tt>/usr/local/src</tt>
+(to do so you should be root, even though here I am thinking that common
+users can write in that directory... if it is not the case just be
+root and change all $ into #); if you are reading this you have already
+de-tar-gzipped this file, but maybe you are doing so automatically from your
+file manager and gone swiftly into the <tt>docs</tt> dir to read
+this &mdash;that was a good idea.</p>
+
+<p>
+Now try the following lines.
+</p>
+
+<pre>
+/usr/local/src$ tar -xzf giface-1.0.tar.gz
+/usr/local/src$ cd giface-1.0
+/usr/local/src/giface-1.0$ ./configure
+</pre>
+
+<p>
+You will see a little bit of output. If everything's fine, i.e. if you
+do not read some error message at the end of the job, then you are ready
+for the next simple step.
+</p>
+
+<pre>
+/usr/local/src/giface-1.0$ make
+</pre>
+
+<p>
+If you don't see any error message, you have just compiled GIface. Now
+you have to install it! If you want to put it in some system-wide bin
+directory, you must become root and type
+</p>
+
+<pre>
+/usr/local/src/giface-1.0$ make install
+</pre>
+
+<p>
+Now theoretically you can delete the <tt>giface-1.0</tt> directory
+(and the tar.gz file too). Or rather you can decide to keep the
+directory (try a <tt>make clean</tt> to clean it).
+</p>
+
+<p>
+There's a another way. If you want to install this program in your home
+directory, you will call <tt>configure</tt> adding the
+option <tt>--prefix /home/yourhome</tt> and the next steps are the same.
+This should work.
+</p>
+
+<p>
+GIface is not a complex program nor indeed it is thought to be very
+portable... You can try to compile it <q>directy</q> with
+</p>
+
+<pre>
+$ gcc giface.c -o giface `pkg-config libglade-2.0 --libs --cflags` -export-dynamic
+</pre>
+
+<p>
+This works if you have the <tt>pkg-config</tt> (very likely), all
+set up properly (that is almost sure on all graphically installed GNU/Linux
+system), the -devel packages installed and can cause some portability
+problem on other UNIX/UNIX-like systems &mdash;if noone has fixed this!
+(You can be lucky and everything could have been gone OK!)
+</p>
+
+<p>
+Once this worked, just copy the <tt>giface</tt> executable and the
+script (in the dir script) where your
+system can locate them.
+</p>
+
+
+
+<h3><a name="calling">Calling GIface</a></h3>
+
+<p>
+This program is almost experimental and uses two syntax. One is simply
+</p>
+
+<pre>
+giface INTERFACE.giface
+</pre>
+
+<p>(where the extension is not mandatory
+.giface), where indeed INTERFACE.giface is none but a glade XML file
+renamed (provided by some interface writer). The other one is
+</p>
+
+<pre>
+giface INTERFACE.giface INTERFACE.desc
+</pre>
+
+<p>
+for most complex behaviour of the interface. So in certain case an interface
+is made up of two separate files (I call this a level-2 interface).
+If you do not specify the second file for a level-2 interface, the interface
+won't work!
+</p>
+
+<p>
+Interface writers, according to their needs can provide a level-2 interface
+or a level-1 interface. The latter is the one that needs just a single
+file, i.e. the glade XML file.
+</p>
+
+<p>
+This is quite <i>cumbersome</i>, I know. The only way to keep the two
+files together is to put them into an archive... Then the giface source
+code should handle the decompression and so on... As fast solution to
+this problem I've implemented another <q>path</q>: the use of a script,
+<tt><b>xgiface</b></tt>, that allows level-2 interface writers to put
+the files inside an archive; indeed it also allows level-1 interface
+writers to compress the glade XML file (that could be rather big,
+say, about 50 kBytes or more)
+</p>
+
+<p>
+So <b>the final user <i>should</i> always use the <tt>xgiface</tt>
+script!</b>. It's use is easy.
+</p>
+
+<pre>
+xgiface lame
+</pre>
+
+<p>
+This will load <tt>$GIFACE_IF_PATH/lame.giface</tt> if the env. var.
+<tt>GIFACE_IF_PATH</tt> exist and is not void. If the file does not
+exist, it will try the current directory. If this fails too, it stops
+with an error.
+</p>
+
+<p>
+If it finds the file, it will check if it is a single file compressed,
+a single file uncompressed, or an archive. In the first and third
+case it needs to decompress/dearchive it somewhere. It will
+decompress/dearchive it in the <tt>/var/tmp/giface</tt> dir (that will
+be created) by default. To override this setting, set the
+<tt>GIFACE_TMP_DIR</tt> to somewhere you (common user)
+have write/read permission. After that, it will run GIface properly.
+</p>
+
+<p>
+In order to reach its aims <tt>xgiface</tt> needs the following
+common GNU/Linux tools: <tt>file</tt> (and a <q>Magic</q> descriptor that
+recognizes tar.gz, gz and zip), <tt>zip</tt>, <tt>tar</tt>, <tt>gzip</tt>.
+</p>
+
+
+<h3><a name="lastthing">Last tricky thing</a></h3>
+
+<p>
+Both level-1 and level-2 interface writers must tell GIface where the
+command line tool they wrote the interface for is. They can <q>relax</q>
+simply <q>communicating</q> GIface the bare name, e.g. <tt>lame</tt>.
+But what if in this way GIface for some reason is not able to locate
+the executable?! (id est the shell cannot reach it for some reason).
+You can override the interface writer settings with the <tt>-e</tt>
+option. E.g.
+</p>
+
+<pre>
+xgiface lame -e /usr/local/bin/lame
+</pre>
+
+<p>
+If your interface file is not in the <tt>GIFACE_IF_PATH</tt>, you can
+force <tt>xgiface</tt> to load it specifying an absolute path
+(a path starting with a <tt>/</tt>) or an <i>explicit</i> relative path
+(starting with a <tt>./</tt> or <tt>../</tt>), or a path containing
+at least one <tt>/</tt> (that can not be part of the name of the
+description file, so its a clue about the real essence of what the
+user's written)
+</p>
+
+<pre>
+xgiface ./lame
+</pre>
+
+<p>
+Loads the interface in <tt>./lame.giface</tt> (or <tt>./lame</tt>)
+rather than that in <tt>$GIFACE_IF_PATH/lame.giface</tt>. Similar
+is
+</p>
+
+<pre>
+xgiface testinterfaces/lame
+</pre>
+
+<p>
+Using relative paths when you bind the execution to a menu of a desktop's
+panel is not a good idea.
+</p>
+
+<hr>
+
+
+
+<h2><a name="if">GIface for interface writers</a></h2>
+
+
+<h3><a name="gipreface">Preface</a></h3>
+
+<p>
+There are two different kinds of interface a guy can provide. One I call
+it level-1 interface and it is the simpler. The other one I call it
+level-2 interface and it uses an extra file for some smooth settings
+a command line program can need interfacing with the interface...
+</p>
+
+<p>
+The approach are a little bit different, so you should choose before you
+start. In any case remember that a level-1 interface can be enhanced
+easily to the level-2, but a level-2 could not be degraded simply to
+a level-1 interface.
+</p>
+
+
+<h3><a name="desc">How to describe interfaces</a></h3>
+
+<p>
+GIface uses libglade, so the interface description is a glade XML file.
+Theoretically you can write it by hand, but more likely you prefer to use
+the GUI Designer Glade.
+</p>
+
+<p>
+For future enhancement and for some special case that could be a need
+for some command line programs, you can create a so called level-2 interface,
+this means that altogether with the glade XML file you must create and
+edit a proper description file we shall see later &mdash;and so we shall
+understand why we need it sometimes.
+</p>
+
+
+<h4><a name="level1">Level-1 interfaces</a></h4>
+
+<p>
+In this kind of interfaces the names (ids) you give to the widgets are
+important. It is through the names and some convention we shall see later
+that GIface can compose the command line that then will be executed.
+</p>
+
+<p>
+Some options to GIface can be provided through invisible widgets, i.e.
+widgets that are not displayed. You can put those widget e.g. in
+a dialog that won't be mapped (shown).
+</p>
+
+<p>
+A GTK Entry widget named <q>commandname</q> is mandatory and holds
+the name of the executable.
+</p>
+
+<p>
+The conventions on the widget naming allow you to associate a specific
+widget with an option; some conventions altogether with provided functions
+of GIface allow you to give special
+capabilities to the interface without feeling to need more than Glade.
+</p>
+
+<p>
+Widgets the content of which must be simply put in the command line
+without leading option must have names starting with <tt>void_</tt>.
+</p>
+
+<p>
+Widgets the textual content of which (typically a GTK Entry but Spin buttons
+for numeric values or combo work too) must be put in the command line
+with a leading option must have names starting with <tt>text_</tt>.
+The rest of the name must be the option itself, e.g. <tt>text_-t</tt>
+put a <tt>-t</tt> in front of the textual content of the widget that has
+that name.
+</p>
+
+<p>
+For switch options, i.e. options that can be handled with a radio buttons
+group or with a checkbox, the name of those widgets must start with
+<tt>opt_</tt>.
+</p>
+
+<p>
+There's another convention. If you have a Gtk Entry named e.g.
+<tt>void_input</tt> the content of which can
+be modified or set by a File Chooser, then the <i>linked</i>
+file chooser widget must be called <tt>input_filechooser</tt>. Typically
+the <tt>clicked</tt> event of the OK button of the file chooser
+call the <tt>giface_update_entry</tt> handler on the relative entry
+object (e.g. <tt>void_input</tt>), which then finds its file chooser by name
+and updates its content.
+</p>
+
+<p>
+The last convention is for <i>activator</i>, i.e. <q>toggler</q> (checkbox
+or similar) that can be used to ghost (make insensitive) some option.
+Insensitive option widgets are ignored even though hold a value. For
+example, if you want to activate/deactivate a option or group of
+option, you hear for toggle event on a checkbox, and call the
+<tt>giface_toggle_active</tt> with the object that you want to toggle,
+e.g. <tt>text_-b</tt>. Then, your checkbox's name must be
+<tt>activator_-b</tt>.
+</p>
+
+<p>
+Using activator can mean some option's name overlaps. This cannot be
+since widget name must be unique; in these case you can add underscores
+just after the prefix (text_ or whatever). So two different widgets
+bringing the same <tt>-b</tt> option can exist if one is named
+<tt>text_-b</tt> and the other one <tt>text__-b</tt>.
+<span alert>FIXME</span>: if an option of a program is e.g.
+<tt>-take_it</tt>, it happens GIface takes <tt>it</tt> as option
+since it searches for last underscore! Hope your program has no this
+kind of option, or if you are a programmer you can fix it.
+</p>
+
+<p>
+That's almost you have to know about level-1 interfaces: the rest is
+a little bit of Glade ability and fantasy, but this argument
+is not covered here.
+</p>
+
+
+<h5><a name="gifaceh">GIface handler you can/must use</a></h5>
+
+<dl class="desc">
+  <dt>giface_emit_commandline</dt>
+  <dd>
+    This outputs the forged command line to the standard input. Can be
+    used for debugging purpose or for other reasons. You can associate
+    this handler to a <tt>clicked</tt> event of a OK button or something
+    like that.
+  </dd>
+  <dt>giface_execute_commandline</dt>
+  <dd>
+    This executes the forged command line.
+  </dd>
+  <dt>giface_update_entry</dt>
+  <dd>
+    You likely associate this handler to the <tt>clicked</tt> event of
+    a OK button of a file chooser, acting on the widget entry you want
+    to update; if the updating entry is <tt>prefix_name</tt> then
+    the file chooser id must be <tt>name_filechooser</tt>. At least
+    one underscore <b>must</b> exist before the name part.
+  </dd>
+  <dt>giface_toggle_active</dt>
+  <dd>
+    You likely associate this handler to the <tt>toggled</tt> event
+    of a toggle button (radio buttons, checkboxs and maybe others),
+    the target object being the widget/group you want to make sensitive
+    or insensitive according to the status of its activator. If
+    the group/widget name is <tt>prefix_name</tt>, the activator
+    name must be <tt>activator_name</tt>. At least one underscore
+    <b>must</b> exist before the name part.
+  </dd>
+</dl>
+
+
+<h5><a name="gifaceo">Glade widget you can/must provide</a></h5>
+
+<dl class="desc">
+  <dt>commandname</dt>
+  <dd>
+    GIface looks at this widget's name to read in the command name. This
+    must be a GtkEntry. You can make it always unmapped or show it
+    altogether with a dialog so that the user can see it. This
+    is <b>mandatory</b> for level-1 interfaces.
+  </dd>
+  <dt>giface_showoutput</dt>
+  <dd>
+    This must be a toggle (as a checkbox) and says if GIface must show
+    you the output in a specific window or not. Default is no (silent).
+    The output is not sent to default stdout, but it is put inside a
+    window with scroller and so on.
+  </dd>
+  <dt>giface_interactive</dt>
+  <dd>
+    This says to GIface that the program can be interactive (it is a
+    toggle). In this
+    case we need a console; the output then is sent to the console and
+    the input is read from it... All is exactly as if you called the
+    program from the command line. This can not work if there's no
+    a input stream set for the GIface itself. This can happen when you
+    put the calling in a desktop menu. Default to no interaction.
+  </dd>
+</dl>
+
+
+<h4><a name="level2">Level-2 interfaces</a></h4>
+
+<p>Coming soon!</p>
+
+<p>
+They must exist since the way level-1 interfaces interact with the
+building of the commandline is limited and sometimes you need more
+control, e.g. an option must come before another one, or an option
+must be the first... then the way level-1 interface avoid name
+conflicts imposes other limits... and so on.
+</p>
+
+<p>
+A level-2 interface should consist of two file. One that describes
+the interface (the glade XML file), and the other one that <q>points</q>
+to the names of the widget and associate to them an option and more
+info if needed, like forced position, precedence, and maybe more.
+</p>
+
+<p>
+So the interfaces creators, when dealing with glade, do not need to
+use special convention about widgets names. Special <q>links</q>
+(as that that makes it possible to update a specific entry getting
+the value from a file chooser) can be set in the option description file.
+</p>
+
+<p>
+I've thought about it as a key file (so that you can use the <b>glib</b>
+to handle it!) divided into sections, each section name according to
+a widget, and keys describe how this widget holds the option and how
+this option should be put in the command line.
+</p>
+
+
+
+<h4><a name="problems">Known problems</a></h4>
+
+<dl class="el">
+  <dt>SpinButtons (and other) gives 0/min value (wrong values)</dt>
+  <dd>
+    If you put a widget inside a page of a notebook and you never
+    show the page containing it, that widget can give wrong default
+    values. E.g. if you have a spin buttons that should hold 128 in
+    a page of a notebook and you emit/execute the command line without
+    showing that page, you will obtain 16 (the minimum chosen for this
+    spin) instead of 128, as if the
+    default value is not set until the widget is shown at least once.
+  </dd>
+</dl>
+
+
+<hr>
+<h2><a name="progr">GIface for programmers</a></h2>
+
+<p>
+See the source codes.
+</p>
+
+
+  </body>
+</html>

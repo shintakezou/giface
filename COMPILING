@@ -1,0 +1,4 @@
+On my system it's simply
+
+gcc giface.c -o giface `pkg-config libglade-2.0 --libs --cflags` -export-dynamic
+
